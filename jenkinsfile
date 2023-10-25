@@ -1,35 +1,11 @@
 pipeline {
-  agent any // Use any available agent
-  
-  stages {
-    stage('Install Playwright') {
-      steps {
-        sh '''
-          export PATH=$PATH:/usr/local/bin
-          npm install
-          npm i -D @playwright/test
-          npx playwright install
-        '''
+   agent { docker { image 'mcr.microsoft.com/playwright:v1.39.0-jammy' } }
+   stages {
+      stage('e2e-tests') {
+         steps {
+            sh 'ci'
+            sh 'npx playwright test'
+         }
       }
-    }
-    stage('Help') {
-      steps {
-        sh 'npx playwright test --help'
-      }
-    }
-    stage('Test') {
-      steps {
-        sh '''
-          npx playwright test --list
-          npx playwright test
-        '''
-      }
-      post {
-        success {
-          archiveArtifacts(artifacts: 'homepage-*.png', followSymlinks: false)
-          sh 'rm -rf *.png'
-        }
-      }
-    }
-  }
+   }
 }
