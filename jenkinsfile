@@ -1,11 +1,16 @@
 pipeline {
-   
-   stages {
-      stage('e2e-tests') {
-         steps {
-            sh 'ci'
-            sh 'npx playwright test'
-         }
-      }
-   }
+    agent any  // This ensures the pipeline runs on any available agent
+
+    stages {
+        stage('e2e-tests') {
+            steps {
+                // Ensure necessary dependencies are installed.
+                // Assuming `ci` command installs and sets up your project.
+                sh 'ci'
+                
+                // Run Playwright tests.
+                sh 'npx playwright test'
+            }
+        }
+    }
 }
