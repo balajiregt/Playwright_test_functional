@@ -1,11 +1,39 @@
 pipeline {
-   agent { docker { image 'mcr.microsoft.com/playwright:v1.39.0-jammy' } }
-   stages {
-      stage('e2e-tests') {
-         steps {
-            sh 'ci'
-            sh 'npx playwright test'
-         }
-      }
-   }
+    agent none // No global agent is defined
+
+    stages {
+        stage('Prepare') {
+            agent { docker { image 'mcr.microsoft.com/playwright:v1.39.0-jammy' } }
+            steps {
+                // Install dependencies, etc.
+                sh '''
+                  npm i -D @playwright/test
+                  npx playwright install
+                '''
+            }
+        }
+        
+        stage('Run Tests') {
+            parallel {
+                stage('Shard 1') {
+                    agent { /* define agent for shard 1 */ }
+                    steps {
+                        sh 'npx playwright test --shard=1/2'
+                    }
+                }
+                stage('Shard 2') {
+                    agent { /* define agent for shard 2 */ }
+                    steps {
+                        sh 'npx playwright test --shard=2/2'
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Post build actions like cleanup
+        }
+    }
 }
