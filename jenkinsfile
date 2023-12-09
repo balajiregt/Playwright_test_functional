@@ -1,70 +1,47 @@
 pipeline {
-    agent none // Using none because specific agents will be defined in stages
+    agent any
 
-    tools {
-        // Make sure 'NodeJS' matches the name of the Node.js installation
-        // configured in your Jenkins Global Tool Configuration
-        nodejs 'NodeJS'
+    parameters {
+        string(name: 'TOTAL_WORKERS', defaultValue: '2', description: 'Total number of workers for Playwright tests')
     }
 
     stages {
         stage('Checkout') {
-            agent any // Define an agent for checkout
             steps {
-                // Checks out the source code from the Git repository
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
-            agent any // Define an agent for installing dependencies
             steps {
-                // Install npm dependencies, including Playwright
                 sh 'npm install'
             }
         }
 
         stage('Install Playwright Browsers') {
-            agent any // Define an agent for installing browsers
             steps {
-                // Install Playwright browsers
                 sh 'npx playwright install'
             }
         }
 
         stage('Run Playwright Tests') {
-            parallel {
-                stage('Shard 1') {
-                    agent any // Define your agent for shard 1
-                    steps {
-                        sh 'npx playwright test --shard=1/2'
-                    }
-                }
-                stage('Shard 2') {
-                    agent any // Define your agent for shard 2
-                    steps {
-                        sh 'npx playwright test --shard=2/2'
-                    }
-                }
+            steps {
+                sh "npx playwright test --workers=\${params.TOTAL_WORKERS}"
             }
         }
     }
 
     post {
         always {
-            // Publish JUnit test results
-            junit 'test-results/*.xml'
-            // Action to perform after the pipeline execution, regardless of the result
+            junit 'test-results/**/*.xml'
             echo 'Pipeline execution is complete.'
         }
 
         success {
-            // Actions to perform if the pipeline succeeds
             echo 'Pipeline succeeded!'
         }
 
         failure {
-            // Actions to perform if the pipeline fails
             echo 'Pipeline failed. Check logs for details.'
         }
     }
