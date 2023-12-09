@@ -35,5 +35,4 @@ pipeline {
         always {
             // Post build actions like cleanup
         }
-    }
 }
