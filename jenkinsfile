@@ -5,7 +5,7 @@ pipeline {
         string(name: 'TOTAL_WORKERS', defaultValue: '2', description: 'Total number of workers for Playwright tests')
     }
 
-   tools {
+    tools {
         // Make sure 'NodeJS' matches the name of the Node.js installation
         // configured in your Jenkins Global Tool Configuration
         nodejs 'NodeJS'
@@ -32,7 +32,8 @@ pipeline {
 
         stage('Run Playwright Tests') {
             steps {
-                sh "npx playwright test --workers=\${params.TOTAL_WORKERS}"
+                // Correctly reference the parameter within the shell command
+                sh "npx playwright test --workers=${params.TOTAL_WORKERS}"
             }
         }
     }
