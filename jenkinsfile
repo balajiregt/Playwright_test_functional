@@ -37,13 +37,13 @@ pipeline {
                 stage('Shard 1') {
                     agent any // Define your agent for shard 1
                     steps {
-                        sh 'npx playwright test --config=playwright.config.js --shard=1/2'
+                        sh 'npx playwright test --shard=1/2'
                     }
                 }
                 stage('Shard 2') {
                     agent any // Define your agent for shard 2
                     steps {
-                        sh 'npx playwright test --config=playwright.config.js --shard=2/2'
+                        sh 'npx playwright test --shard=2/2'
                     }
                 }
             }
