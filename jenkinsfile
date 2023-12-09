@@ -5,6 +5,12 @@ pipeline {
         string(name: 'TOTAL_WORKERS', defaultValue: '2', description: 'Total number of workers for Playwright tests')
     }
 
+   tools {
+        // Make sure 'NodeJS' matches the name of the Node.js installation
+        // configured in your Jenkins Global Tool Configuration
+        nodejs 'NodeJS'
+    }
+
     stages {
         stage('Checkout') {
             steps {
