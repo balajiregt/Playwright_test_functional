@@ -9,7 +9,7 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            agent { label 'node-general' } // Define an agent for checkout
+            agent any // Define an agent for checkout
             steps {
                 // Checks out the source code from the Git repository
                 checkout scm
@@ -17,7 +17,7 @@ pipeline {
         }
 
         stage('Install Dependencies') {
-            agent { label 'node-general' } // Define an agent for installing dependencies
+            agent any // Define an agent for installing dependencies
             steps {
                 // Install npm dependencies, including Playwright
                 sh 'npm install'
@@ -25,7 +25,7 @@ pipeline {
         }
 
         stage('Install Playwright Browsers') {
-            agent { label 'node-general' } // Define an agent for installing browsers
+            agent any // Define an agent for installing browsers
             steps {
                 // Install Playwright browsers
                 sh 'npx playwright install'
