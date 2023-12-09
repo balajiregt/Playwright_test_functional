@@ -3,7 +3,7 @@ pipeline {
 
     stages {
         stage('Prepare') {
-            agent { docker { image 'mcr.microsoft.com/playwright:v1.39.0-jammy' } }
+            agent { docker { image 'mcr.microsoft.com/playwright:v1.40.0-jammy' } }
             steps {
                 // Install dependencies, etc.
                 sh '''
@@ -16,13 +16,13 @@ pipeline {
         stage('Run Tests') {
             parallel {
                 stage('Shard 1') {
-                    agent { /* define agent for shard 1 */ }
+                    agent { label 'node-for-shard-1' } // Define your agent for shard 1
                     steps {
                         sh 'npx playwright test --shard=1/2'
                     }
                 }
                 stage('Shard 2') {
-                    agent { /* define agent for shard 2 */ }
+                    agent { label 'node-for-shard-2' } // Define your agent for shard 2
                     steps {
                         sh 'npx playwright test --shard=2/2'
                     }
@@ -30,9 +30,22 @@ pipeline {
             }
         }
     }
-    
     post {
         always {
-            // Post build actions like cleanup
+            // Publish JUnit test results
+            junit 'test-results/*.xml'
+            // Action to perform after the pipeline execution, regardless of the result
+            echo 'Pipeline execution is complete.'
         }
+
+        success {
+            // Actions to perform if the pipeline succeeds
+            echo 'Pipeline succeeded!'
+        }
+
+        failure {
+            // Actions to perform if the pipeline fails
+            echo 'Pipeline failed. Check logs for details.'
+        }
+      }   
 }
