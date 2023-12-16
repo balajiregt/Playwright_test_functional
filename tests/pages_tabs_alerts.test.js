@@ -1,5 +1,37 @@
 import { test, expect } from '@playwright/test';
 
+test('interact with a new window', async ({ browser }) => {
+  // Launch a new browser context and page
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Go to your target page
+  await page.goto('https://practice-automation.com/window-operations/');
+  
+  // Set up an event listener for the 'popup' event before triggering the new window
+  const [newWindow] = await Promise.all([
+    context.waitForEvent('page'), // Waits for the popup event
+    page.click('button[onclick="newWindow()"] b') // Replace with the selector that causes a new window to open
+  ]);
+
+  // Now you can interact with the new window
+  //await newWindow.waitForLoadState(); // Wait for the new page to load
+  await expect(newWindow).toHaveURL('https://automatenow.io'); // Replace with the expected URL of the new window
+
+  // Interact with the new window
+  await newWindow.locator('#search_toggle').click();
+  await newWindow.getByPlaceholder('Search', { exact: true }).fill('playwright');
+
+  // Close the new window if needed
+  await newWindow.close();
+
+  // Continue with other interactions on the original page
+  //await page.click('another-selector');
+
+  // Clean up
+  await context.close();
+});
+
 test('new tab accessing', async ({ context }) => {
   const page = await context.newPage()
   await page.goto('https://automationpanda.com/bdd/')
@@ -13,59 +45,38 @@ test('new tab accessing', async ({ context }) => {
   console.log(await page.title()) //parent tab
 })
 
-// Create window one object
-test('new window-when second window resource url is known', async ({ context,page }) => {
-  const pageOne = await context.newPage();
-  await pageOne.goto('https://practice-automation.com/window-operations/')
-  await pageOne.locator('button[onclick="newWindow()"] b').click()
-
-  // Create window two object
-  const pageTwo = await context.newPage();
-  await pageTwo.goto('https://automatenow.io/')
-  await pageTwo.locator('#nav_toggle').click()
-  await pageTwo.getByText('Training').isVisible()
-});
-
-test('new window accessing-when second window resource url is not known', async ({ page }) => {
-  // Create window one object
-  await page.goto('https://practice-automation.com/window-operations/')
-
-  const [pageTwo] = await Promise.all([
-    page.waitForEvent('popup'),                                      //listener
-    await page.locator('button[onclick="newWindow()"] b').click()    //event on the promise page    
-  ])
-  expect(pageTwo.url()).toContain('automatenow')
-  await pageTwo.locator('#nav_toggle').click()
-  await pageTwo.getByText('Training').isVisible()
-});
-
 test('new alert accessing-click ok', async ({ page }) => {
-  // Create window one object
-  await page.goto('https://practice-automation.com/popups/')
-  await page.locator('#confirm').click()
+  // Navigate to the page
+  await page.goto('https://practice-automation.com/popups/');
 
-  page.on('dialog', (dialog) => {
-    dialog.accept()
-    expect(page.getByText('OK it is!')).toBeVisible()
-  })
-  page.on('dialog', (dialog) => {
-    dialog.dismiss()
-    expect(page.getByText('Cancel it is!')).toBeVisible()
-  })
+  // Add an event listener for the dialog
+  page.once('dialog', async (dialog) => {
+    await dialog.accept(); // Clicks 'OK' on the dialog
+  });
+
+  // Trigger the confirm dialog
+  await page.locator('#confirm').click();
+
+  // Wait for the text 'OK it is!' to be visible and assert its presence
+  await expect(page.locator('text=OK it is!')).toBeVisible();
 });
+
 
 test('new prompt accessing', async ({ page }) => {
-  // Create window one object
-  await page.goto('https://practice-automation.com/popups/')
-  await page.locator('button[id="prompt"] b').click()
+  // Navigate to the page
+  await page.goto('https://practice-automation.com/popups/');
+  var prompttext = 'hello world';
+  // Add an event listener for the dialog
+  page.on('dialog', async (dialog) => {
+    
+    await dialog.accept(prompttext);  // Respond to the dialog
+  });
 
-  page.on('dialog', (dialog) => {
-    dialog.accept('hello world')
-    expect(page.getByText('Nice to meet you, hello world!')).toBeVisible()
-  })
-  page.on('dialog', (dialog) => {
-    dialog.dismiss()
-    expect(page.getByText('Fine, be that way..')).toBeVisible()
-  })
+  // Trigger the prompt dialog
+  await page.locator('#prompt').click();
+
+  // Wait for the text to be visible and assert its presence
+  const responseText = `Nice to meet you, ${prompttext}!`;
+  await expect(page.locator(`text=${responseText}`)).toBeVisible();
 });
 

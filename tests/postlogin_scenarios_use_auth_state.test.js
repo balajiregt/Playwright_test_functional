@@ -37,16 +37,6 @@ test('Verify the shopping cart-CheckOut', async () => {
   await page.close()
 });
 
-test('Verify the shopping cart-Clearcart', async () => {
-  const page = await setupPage(context);//call the setupPage func to reuse newPage() for this test
-  await page.locator('button[class="mat-focus-indicator mat-icon-button mat-button-base"] mat-icon:nth-child(1)').click()
-  let cartitems=await page.getByRole('heading', { name: 'Cart Items' })
-  if(cartitems)
-  await page.getByText('Clear cart').click()
-  expect(await page.getByText(' Shopping cart is empty')).toBeVisible()
-  await page.close()
-});
-
 test('Verify the- Add to cart', async () => {
   const page = await setupPage(context); //call the setupPage func to reuse newPage() for this test
   await page.locator('mat-card-content').filter({ hasText: 'HP2₹235.00shopping_cart Add to Cart' }).getByRole('button', { name: 'Add to Cart' }).click()

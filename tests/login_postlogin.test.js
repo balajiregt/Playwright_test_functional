@@ -12,16 +12,16 @@ test.describe('qbank server', () => {
 
     test('login', async ({ page }) => {
         await page.goto('https://qbank.accelq.com/')
-        await page.type('#qb-username','qbankadmin')
-        await page.type('#qb-password','pass123')
+        await page.fill('#qb-username','qbankadmin')
+        await page.fill('#qb-password','qbTrnPass1&')
         await page.locator('button[class="qb-signin-button"]').click()
 
     });
 
     test('login-postlogin', async ({ page }) => {
         await page.goto('https://qbank.accelq.com/')
-        await page.type('#qb-username','qbankadmin')
-        await page.type('#qb-password','pass123')
+        await page.fill('#qb-username','qbankadmin')
+        await page.fill('#qb-password','qbTrnPass1&')
         await page.locator('button[class="qb-signin-button"]').click()
         await page.waitForURL('**\/account/acsum')
 

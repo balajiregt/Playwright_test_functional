@@ -1,11 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Checkbox-Radio-Dropdowns', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('https://letcode.in/test')
-  });
 
   test('test - checkbox', async ({ page }) => {
+    await page.goto('https://letcode.in/test')
     await page.locator('body > app-root:nth-child(1) > app-test-site:nth-child(3) > section:nth-child(4) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > app-menu:nth-child(1) > div:nth-child(1) > footer:nth-child(3) > a:nth-child(1)').click()
 
     //first checkbox- remember me
@@ -15,26 +13,22 @@ test.describe('Checkbox-Radio-Dropdowns', () => {
     await terms.isChecked()
     //now uncheck by using setchecked
     await terms.setChecked()
-    await page.waitForTimeout(5000)
 
     //second checkbox- terms and conditions
     //now check the box
     await page.check('(//input[@type="checkbox"])[2]')
-    await page.waitForTimeout(5000)
 
     //uncheck the box
     await page.locator('(//input[@type="checkbox"])[2]').uncheck()
-    await page.waitForTimeout(5000)
 
     //now check by using setchecked
     await page.locator('(//input[@type="checkbox"])[2]').setChecked(true)
-    await page.waitForTimeout(5000)
-
   });
 
   test('test - radiobox', async ({ page }) => {
-    await page.locator('body > app-root:nth-child(1) > app-test-site:nth-child(3) > section:nth-child(4) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > app-menu:nth-child(1) > div:nth-child(1) > footer:nth-child(3) > a:nth-child(1)').click()
-
+    await page.goto('https://letcode.in/test')
+    await page.getByRole('link', { name: 'Toggle' }).click();
+    
     //first radibutton- bar
     const selectedradio = await page.locator('//input[@id="notfoo"]')
     await selectedradio.isChecked()
@@ -55,7 +49,7 @@ test.describe('Checkbox-Radio-Dropdowns', () => {
     // });
      
     // Listen for all console logs
-  
+    await page.goto('https://letcode.in/test')
     await page.locator('//a[normalize-space()="Drop-Down"]').click()
 
     //first dropdown- values list once down arrow is clicked
