@@ -1,29 +1,22 @@
-const { test, expect } = require("@playwright/test");
+// Importing the required modules using ES6 syntax
+import { test, expect } from "@playwright/test";
 
-test.describe('qbank server', () => {
-    
-    test('default option', async ({ page }) => {
+test.describe('qbank server login', () => {
+
+    test.beforeEach(async ({ page }) => {
         await page.goto('https://qbank.accelq.com/')
-        await expect(page.locator('input[id="Personal Banking"]')).toHaveClass("qbf-radio active")
-        await expect(page.locator('input[id="Corporate Banking"]')).not.toHaveClass("active")
-        await page.locator('[id="Corporate Banking"]').click()
-        await expect(page.locator('[id="Corporate Banking"]')).toHaveClass("qbf-radio active")
+        await page.fill('#qb-username','qbankadmin')
+        await page.fill('#qb-password','qbTrnPass1&')
+        await page.getByRole('button', { name: 'Sign In' }).click();
     });
 
-    test('login', async ({ page }) => {
-        await page.goto('https://qbank.accelq.com/')
-        await page.type('#qb-username','qbankadmin')
-        await page.type('#qb-password','pass123')
-        await page.locator('button[class="qb-signin-button"]').click()
-
-    });
-
-    test('login-postlogin', async ({ page }) => {
-        await page.goto('https://qbank.accelq.com/')
-        await page.type('#qb-username','qbankadmin')
-        await page.type('#qb-password','pass123')
-        await page.locator('button[class="qb-signin-button"]').click()
+    test('verify the user name', async ({ page }) => {
+      
         await page.waitForURL('**\/account/acsum')
 
+        // Validate successful login
+        await page.getByRole('link', { name: 'Thomas' }).isVisible()
+        const logoutButton = await page.getByText('Log out')
+        expect(await logoutButton.isVisible()).toBeTruthy();
     });
-})
+});

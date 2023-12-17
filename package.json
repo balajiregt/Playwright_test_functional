@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "npx playwright test",
+    "testinCloud": "npx playwright test --config=playwright.service.config.ts --workers=20"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +15,7 @@
     "@types/node": "^20.8.8"
   },
   "dependencies": {
+    "dotenv": "^16.3.1",
     "playwright": "^1.40.1"
   }
 }

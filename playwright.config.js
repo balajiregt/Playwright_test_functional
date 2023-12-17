@@ -12,6 +12,8 @@ const { defineConfig, devices } = require('@playwright/test');
  */
 module.exports = defineConfig({
   testDir: './tests',
+  // Each test is given 30 seconds.
+  timeout: 60000,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -21,7 +23,7 @@ module.exports = defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 3 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [['junit', { outputFile: 'test-results/results.xml' }]],
+  reporter: [['junit', { outputFile: 'test-results/results.xml' }], html],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -37,7 +39,14 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
+    {
+      name: 'Microsoft Edge',
+      use: { ...devices['Desktop Edge'] },
+    },
+    {
+      name: 'Firefox',
+      use: { ...devices['Desktop Firefox'] }
+    }
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
