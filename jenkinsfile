@@ -1,39 +1,55 @@
 pipeline {
-    agent none // No global agent is defined
+    agent any
+
+    parameters {
+        string(name: 'TOTAL_WORKERS', defaultValue: '2', description: 'Total number of workers for Playwright tests')
+    }
+
+    tools {
+        // Make sure 'NodeJS' matches the name of the Node.js installation
+        // configured in your Jenkins Global Tool Configuration
+        nodejs 'NodeJS'
+    }
 
     stages {
-        stage('Prepare') {
-            agent { docker { image 'mcr.microsoft.com/playwright:v1.39.0-jammy' } }
+        stage('Checkout') {
             steps {
-                // Install dependencies, etc.
-                sh '''
-                  npm i -D @playwright/test
-                  npx playwright install
-                '''
+                checkout scm
             }
         }
-        
-        stage('Run Tests') {
-            parallel {
-                stage('Shard 1') {
-                    agent { /* define agent for shard 1 */ }
-                    steps {
-                        sh 'npx playwright test --shard=1/2'
-                    }
-                }
-                stage('Shard 2') {
-                    agent { /* define agent for shard 2 */ }
-                    steps {
-                        sh 'npx playwright test --shard=2/2'
-                    }
-                }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Install Playwright Browsers') {
+            steps {
+                sh 'npx playwright install'
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                // Correctly reference the parameter within the shell command
+                sh "npx playwright test --workers=${params.TOTAL_WORKERS}"
             }
         }
     }
-    
+
     post {
         always {
-            // Post build actions like cleanup
+            junit 'test-results/*.xml'
+            echo 'Pipeline execution is complete.'
+        }
+
+        success {
+            echo 'Pipeline succeeded!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check logs for details.'
         }
     }
 }
