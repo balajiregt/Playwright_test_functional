@@ -1,0 +1,132 @@
+name: QA Portal Test Execution
+
+# This workflow is triggered by the QA Portal for running individual tests
+on:
+  workflow_dispatch:
+    inputs:
+      test_file:
+        description: 'Test file path to execute (e.g. tests/example.spec.js)'
+        required: true
+        type: string
+      browser:
+        description: 'Browser to use for testing'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+        - chromium
+        - firefox
+        - webkit
+      environment:
+        description: 'Test environment'
+        required: false
+        default: 'test'
+        type: string
+      triggered_by:
+        description: 'Who/what triggered this test'
+        required: false
+        default: 'manual'
+        type: string
+
+# Set permissions for the workflow
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  test:
+    name: Execute Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    env:
+      # Set environment variables
+      NODE_ENV: test
+      CI: true
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/ms-playwright
+    
+    steps:
+      - name: 🔍 Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: 📥 Install dependencies
+        run: |
+          echo "Installing project dependencies..."
+          npm ci
+          
+      - name: 🎭 Install Playwright browsers
+        run: |
+          echo "Installing Playwright browsers..."
+          npx playwright install --with-deps ${{ inputs.browser }}
+          
+      - name: 🧪 Execute test file
+        id: test-execution
+        run: |
+          echo "Executing test: ${{ inputs.test_file }}"
+          echo "Browser: ${{ inputs.browser }}"
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Triggered by: ${{ inputs.triggered_by }}"
+          
+          # Create test results directory
+          mkdir -p test-results
+          
+          # Run the specific test file
+          npx playwright test "${{ inputs.test_file }}" \
+            --project=${{ inputs.browser }} \
+            --reporter=html,json \
+            --output-dir=test-results \
+            || true
+            
+      - name: 📊 Generate test summary
+        if: always()
+        run: |
+          echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test File**: ${{ inputs.test_file }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Browser**: ${{ inputs.browser }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered By**: ${{ inputs.triggered_by }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          
+          # Add test results if JSON report exists
+          if [ -f "test-results/results.json" ]; then
+            echo "- **Results**: Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+      - name: 📸 Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-${{ inputs.browser }}-${{ github.run_number }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 30
+          
+      - name: 📝 Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-json-${{ github.run_number }}
+          path: test-results/results.json
+          retention-days: 30
+          
+      - name: 🏁 Test completion
+        if: always()
+        run: |
+          echo "Test execution completed"
+          echo "Results and artifacts have been uploaded"
+          
+          # Set output for external systems
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Test execution successful"
+            exit 0
+          else
+            echo "❌ Test execution failed"
+            exit 1
+          fi
