@@ -73,15 +73,32 @@ jobs:
           echo "Environment: ${{ inputs.environment }}"
           echo "Triggered by: ${{ inputs.triggered_by }}"
           
+          # Debug information
+          echo "Current directory: $(pwd)"
+          echo "Available files in tests directory:"
+          ls -la tests/ || echo "Tests directory not found"
+          echo "Checking if test file exists:"
+          ls -la "${{ inputs.test_file }}" || echo "Test file not found: ${{ inputs.test_file }}"
+          
+          # Check Playwright installation
+          echo "Checking Playwright installation:"
+          npx playwright --version
+          
+          # Check available browsers
+          echo "Checking installed browsers:"
+          npx playwright show-browsers
+          
           # Create test results directory
           mkdir -p test-results
           
-          # Run the specific test file
+          # Run the specific test file with verbose output
+          echo "Starting test execution..."
           npx playwright test "${{ inputs.test_file }}" \
             --project=${{ inputs.browser }} \
             --reporter=html,json \
             --output-dir=test-results \
-            || true
+            --verbose \
+            || echo "Test execution completed with exit code: $?"
             
       - name: 📊 Generate test summary
         if: always()
