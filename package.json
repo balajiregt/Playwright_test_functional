@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",
-    "testinCloud": "npx playwright test --config=playwright.service.config.ts --workers=20"
+    "testinCloud": "npx playwright test --config=playwright.service.config.ts --workers=20",
+    "security:staged": "node scripts/security-gate.mjs",
+    "security:hooks": "node scripts/install-security-hook.mjs",
+    "security:check": "python3 scripts/security_audit.py"
   },
   "keywords": [],
   "author": "",
